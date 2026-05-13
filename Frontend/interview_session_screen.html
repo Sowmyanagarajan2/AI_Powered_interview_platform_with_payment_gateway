@@ -1,0 +1,176 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+  @keyframes timer-urgent { 0%,100%{color:#FF6B35} 50%{color:#EF4444} }
+  @keyframes progress-fill { from{width:0} to{width:68%} }
+  @keyframes ai-appear { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+  .screen { background: #0B1437; border-radius: 12px; padding: 0; overflow: hidden; font-family: var(--font-sans); min-height: 560px; }
+  .topbar { background: #0E1842; border-bottom: 0.5px solid rgba(255,255,255,0.08); padding: 0 20px; height: 48px; display: flex; align-items: center; justify-content: space-between; }
+  .brand { font-size: 13px; font-weight: 500; color: #C2D6FA; letter-spacing: 0.03em; display: flex; align-items: center; gap: 8px; }
+  .brand-dot { width: 8px; height: 8px; border-radius: 50%; background: #00F5A0; animation: pulse-dot 1.8s ease-in-out infinite; }
+  .live-badge { background: rgba(0,245,160,0.12); border: 0.5px solid rgba(0,245,160,0.3); border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 500; color: #00F5A0; display: flex; align-items: center; gap: 5px; }
+  .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #00F5A0; animation: pulse-dot 1s ease-in-out infinite; }
+  .timer-block { text-align: center; }
+  .timer-val { font-size: 22px; font-weight: 500; font-variant-numeric: tabular-nums; letter-spacing: 0.06em; animation: timer-urgent 1s ease-in-out infinite; }
+  .timer-label { font-size: 10px; color: #9AA3BE; margin-top: 1px; }
+  .progress-bar-wrap { height: 3px; background: rgba(255,255,255,0.07); position: relative; }
+  .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #2451B7, #00D48A); width: 0%; animation: progress-fill 1s ease-out forwards 0.3s; }
+  .progress-q { position: absolute; right: 20px; top: 6px; font-size: 11px; color: #5A6380; }
+  .body { display: flex; height: calc(100% - 48px - 3px); min-height: 508px; }
+  .left-panel { flex: 0 0 220px; background: #0E1842; border-right: 0.5px solid rgba(255,255,255,0.07); padding: 16px 14px; display: flex; flex-direction: column; gap: 10px; }
+  .panel-label { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: #5A6380; margin-bottom: 4px; }
+  .skill-row { display: flex; align-items: center; gap: 8px; }
+  .skill-name { font-size: 12px; color: #9AA3BE; flex: 1; }
+  .skill-bar { height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; flex: 2; overflow: hidden; }
+  .skill-fill { height: 100%; border-radius: 2px; }
+  .skill-pct { font-size: 11px; color: #5A6380; min-width: 28px; text-align: right; }
+  .stat-mini { background: rgba(255,255,255,0.04); border-radius: 8px; padding: 9px 10px; }
+  .stat-mini-val { font-size: 18px; font-weight: 500; color: #C2D6FA; }
+  .stat-mini-lbl { font-size: 10px; color: #5A6380; margin-top: 2px; }
+  .main-panel { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 16px; overflow: hidden; }
+  .q-card { background: #F8F9FF; border-radius: 10px; padding: 16px 18px; }
+  .q-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .q-num { font-size: 11px; font-weight: 500; color: #2451B7; }
+  .q-tag { background: #EEF1FA; border-radius: 20px; padding: 2px 9px; font-size: 11px; color: #5A6380; }
+  .q-diff { background: #FEF3C7; border-radius: 20px; padding: 2px 9px; font-size: 11px; color: #92400E; }
+  .q-text { font-size: 14px; color: #0B1437; line-height: 1.55; font-weight: 400; }
+  .answer-label { font-size: 11px; color: #5A6380; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; }
+  .answer-count { font-size: 11px; color: #9AA3BE; }
+  .answer-box { background: #122057; border: 0.5px solid rgba(59,111,212,0.4); border-radius: 10px; padding: 14px 16px; min-height: 110px; color: #C2D6FA; font-size: 13px; line-height: 1.65; }
+  .cursor-blink { display: inline-block; width: 2px; height: 14px; background: #00F5A0; vertical-align: middle; margin-left: 1px; animation: pulse-dot 0.9s ease-in-out infinite; }
+  .action-row { display: flex; gap: 10px; align-items: center; }
+  .btn-skip { background: transparent; border: 0.5px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 8px 14px; font-size: 12px; color: #9AA3BE; cursor: pointer; }
+  .btn-submit { background: linear-gradient(135deg, #2451B7, #1A3080); border: none; border-radius: 8px; padding: 8px 20px; font-size: 13px; font-weight: 500; color: #fff; cursor: pointer; flex: 1; }
+  .btn-record { background: rgba(239,68,68,0.12); border: 0.5px solid rgba(239,68,68,0.3); border-radius: 8px; padding: 8px 14px; font-size: 12px; color: #EF4444; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+  .right-panel { flex: 0 0 210px; background: #0E1842; border-left: 0.5px solid rgba(255,255,255,0.07); padding: 16px 14px; display: flex; flex-direction: column; gap: 12px; }
+  .ai-panel { background: rgba(139,92,246,0.1); border: 0.5px solid rgba(139,92,246,0.25); border-radius: 10px; padding: 12px; animation: ai-appear 0.6s ease-out; }
+  .ai-header { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+  .ai-dot { width: 7px; height: 7px; border-radius: 50%; background: #8B5CF6; animation: pulse-dot 1.4s ease-in-out infinite; }
+  .ai-title { font-size: 11px; font-weight: 500; color: #8B5CF6; }
+  .ai-text { font-size: 12px; color: #C2D6FA; line-height: 1.55; }
+  .hint-row { display: flex; align-items: flex-start; gap: 7px; margin-top: 8px; }
+  .hint-bullet { width: 5px; height: 5px; border-radius: 50%; background: rgba(139,92,246,0.5); margin-top: 5px; flex-shrink: 0; }
+  .hint-txt { font-size: 11px; color: #9AA3BE; line-height: 1.45; }
+  .keyword-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+  .keyword { background: rgba(0,212,138,0.1); border: 0.5px solid rgba(0,212,138,0.25); border-radius: 20px; padding: 3px 9px; font-size: 11px; color: #00D48A; }
+  .confidence-meter { background: rgba(255,255,255,0.04); border-radius: 8px; padding: 10px; }
+  .conf-label { font-size: 10px; color: #5A6380; margin-bottom: 7px; }
+  .conf-arc { display: flex; align-items: center; gap: 8px; }
+  .conf-val { font-size: 20px; font-weight: 500; color: #00D48A; }
+  .conf-sub { font-size: 10px; color: #5A6380; }
+</style>
+
+<div class="screen">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-dot"></div>
+      PrepAI — Interview Session
+    </div>
+    <div class="timer-block">
+      <div class="timer-val">0:24</div>
+      <div class="timer-label">time remaining</div>
+    </div>
+    <div class="live-badge">
+      <div class="live-dot"></div>
+      LIVE
+    </div>
+  </div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill"></div>
+    <div class="progress-q">Q 4 / 7</div>
+  </div>
+
+  <div class="body">
+    <div class="left-panel">
+      <div>
+        <div class="panel-label">Session Stats</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:4px;">
+          <div class="stat-mini"><div class="stat-mini-val" style="color:#10B981;">3</div><div class="stat-mini-lbl">Answered</div></div>
+          <div class="stat-mini"><div class="stat-mini-val" style="color:#F59E0B;">1</div><div class="stat-mini-lbl">Skipped</div></div>
+          <div class="stat-mini"><div class="stat-mini-val">72%</div><div class="stat-mini-lbl">Avg score</div></div>
+          <div class="stat-mini"><div class="stat-mini-val" style="color:#8B5CF6;">3</div><div class="stat-mini-lbl">Remaining</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="panel-label">Skill Breakdown</div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
+          <div class="skill-row">
+            <div class="skill-name">Clarity</div>
+            <div class="skill-bar"><div class="skill-fill" style="width:78%;background:#00D48A;"></div></div>
+            <div class="skill-pct">78</div>
+          </div>
+          <div class="skill-row">
+            <div class="skill-name">Depth</div>
+            <div class="skill-bar"><div class="skill-fill" style="width:62%;background:#F59E0B;"></div></div>
+            <div class="skill-pct">62</div>
+          </div>
+          <div class="skill-row">
+            <div class="skill-name">Examples</div>
+            <div class="skill-bar"><div class="skill-fill" style="width:45%;background:#EF4444;"></div></div>
+            <div class="skill-pct">45</div>
+          </div>
+          <div class="skill-row">
+            <div class="skill-name">Structure</div>
+            <div class="skill-bar"><div class="skill-fill" style="width:85%;background:#00D48A;"></div></div>
+            <div class="skill-pct">85</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-panel">
+      <div class="q-card">
+        <div class="q-meta">
+          <div class="q-num">Question 4</div>
+          <div class="q-tag">System Design</div>
+          <div class="q-diff">Medium</div>
+        </div>
+        <div class="q-text">Describe how you would design a scalable notification system that handles millions of users across multiple channels — email, SMS, and push notifications.</div>
+      </div>
+      <div>
+        <div class="answer-label">
+          <span>Your answer</span>
+          <span class="answer-count">187 / 400 words</span>
+        </div>
+        <div class="answer-box">
+          I would design this using an event-driven microservices architecture. The core components would be a Notification API Gateway, a Message Queue (Kafka), and dedicated channel workers for each delivery type.<br><br>
+          For scalability, each channel handler would be a separate service that can scale independently based on load. Kafka topics would be partitioned by user region to reduce latency...<div class="cursor-blink"></div>
+        </div>
+      </div>
+      <div class="action-row">
+        <button class="btn-skip">Skip</button>
+        <button class="btn-record">⏺ Voice</button>
+        <button class="btn-submit">Submit Answer →</button>
+      </div>
+    </div>
+
+    <div class="right-panel">
+      <div class="ai-panel">
+        <div class="ai-header">
+          <div class="ai-dot"></div>
+          <div class="ai-title">AI Coach — Live</div>
+        </div>
+        <div class="ai-text">Good start on architecture. Consider adding fault tolerance and delivery guarantees.</div>
+        <div class="hint-row"><div class="hint-bullet"></div><div class="hint-txt">Mention retry queues or dead-letter handling</div></div>
+        <div class="hint-row"><div class="hint-bullet"></div><div class="hint-txt">Address rate-limiting per user</div></div>
+        <div class="hint-row"><div class="hint-bullet"></div><div class="hint-txt">Add a concrete scale figure (e.g. 10M msg/hr)</div></div>
+        <div class="keyword-row">
+          <div class="keyword">Kafka</div>
+          <div class="keyword">idempotency</div>
+          <div class="keyword">fan-out</div>
+        </div>
+      </div>
+      <div class="confidence-meter">
+        <div class="conf-label">AI confidence score</div>
+        <div class="conf-arc">
+          <div class="conf-val">74</div>
+          <div>
+            <div style="font-size:12px;color:#C2D6FA;font-weight:500;">/ 100</div>
+            <div class="conf-sub">Trending ↑</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
