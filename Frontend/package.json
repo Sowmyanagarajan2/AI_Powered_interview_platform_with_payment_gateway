@@ -34,4 +34,10 @@
       "last 1 safari version"
     ]
   }
+  ,
+  "devDependencies": {
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/jest-dom": "^6.0.0",
+    "@testing-library/user-event": "^14.4.3"
+  }
 }
