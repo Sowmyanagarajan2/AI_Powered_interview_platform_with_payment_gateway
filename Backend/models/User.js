@@ -5,8 +5,16 @@ const userSchema = new mongoose.Schema(
   {
     googleId: {
       type: String,
-      required: true,
+      required: false,
       unique: true,
+      sparse: true,
+      index: true
+    },
+    supabaseId: {
+      type: String,
+      required: false,
+      unique: true,
+      sparse: true,
       index: true
     },
     email: {

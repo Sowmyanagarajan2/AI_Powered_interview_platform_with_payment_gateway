@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import './InterviewSession.css';
 import questionSeed from './data/questionSeed';
 
@@ -13,7 +13,7 @@ const formatTime = (totalSeconds) => {
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 };
 
-const TopBar = ({ timeRemaining, isTimeUp, onBack }) => (
+const TopBar = React.memo(({ timeRemaining, isTimeUp, onBack }) => (
   <div className="topbar">
     {onBack && (
       <button className="back-btn" onClick={onBack} title="Back to Profile">
@@ -33,16 +33,16 @@ const TopBar = ({ timeRemaining, isTimeUp, onBack }) => (
       LIVE
     </div>
   </div>
-);
+));
 
-const ProgressBar = ({ progress, questionNumber, totalQuestions }) => (
+const ProgressBar = React.memo(({ progress, questionNumber, totalQuestions }) => (
   <div className="progress-bar-wrap">
     <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
     <div className="progress-q">Q {questionNumber} / {totalQuestions}</div>
   </div>
-);
+));
 
-const SessionStats = ({ answered, skipped, avgScore, remaining }) => (
+const SessionStats = React.memo(({ answered, skipped, avgScore, remaining }) => (
   <div>
     <div className="panel-label">Session Stats</div>
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '7px', marginTop: '4px' }}>
@@ -64,9 +64,9 @@ const SessionStats = ({ answered, skipped, avgScore, remaining }) => (
       </div>
     </div>
   </div>
-);
+));
 
-const SkillBreakdown = ({ skills }) => (
+const SkillBreakdown = React.memo(({ skills }) => (
   <div>
     <div className="panel-label">Question Mix</div>
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '4px' }}>
@@ -84,25 +84,23 @@ const SkillBreakdown = ({ skills }) => (
       ))}
     </div>
   </div>
-);
+));
 
-const LeftPanel = ({ answered, skipped, avgScore, remaining }) => {
-  const skills = [
-    { name: 'Technical', percentage: 50, color: '#00D48A' },
-    { name: 'HR', percentage: 50, color: '#F59E0B' },
-    { name: 'MCQ', percentage: 100, color: '#2451B7' },
-    { name: 'Randomized', percentage: 100, color: '#8B5CF6' }
-  ];
+const staticSkills = [
+  { name: 'Technical', percentage: 50, color: '#00D48A' },
+  { name: 'HR', percentage: 50, color: '#F59E0B' },
+  { name: 'MCQ', percentage: 100, color: '#2451B7' },
+  { name: 'Randomized', percentage: 100, color: '#8B5CF6' }
+];
 
-  return (
-    <div className="left-panel">
-      <SessionStats answered={answered} skipped={skipped} avgScore={avgScore} remaining={remaining} />
-      <SkillBreakdown skills={skills} />
-    </div>
-  );
-};
+const LeftPanel = React.memo(({ answered, skipped, avgScore, remaining }) => (
+  <div className="left-panel">
+    <SessionStats answered={answered} skipped={skipped} avgScore={avgScore} remaining={remaining} />
+    <SkillBreakdown skills={staticSkills} />
+  </div>
+));
 
-const QuestionCard = ({ questionNumber, question }) => (
+const QuestionCard = React.memo(({ questionNumber, question }) => (
   <div className="q-card">
     <div className="q-meta">
       <div className="q-num">Question {questionNumber}</div>
@@ -112,9 +110,9 @@ const QuestionCard = ({ questionNumber, question }) => (
     </div>
     <div className="q-text">{question.question}</div>
   </div>
-);
+));
 
-const OptionList = ({ options, selectedOption, correctAnswer, showResult, onSelect }) => (
+const OptionList = React.memo(({ options, selectedOption, correctAnswer, showResult, onSelect }) => (
   <div className="option-panel">
     <div className="answer-label">
       <span>Choose one option</span>
@@ -140,9 +138,9 @@ const OptionList = ({ options, selectedOption, correctAnswer, showResult, onSele
       })}
     </div>
   </div>
-);
+));
 
-const ActionButtons = ({ canSubmit, showResult, onSkip, onVoice, onSubmit }) => (
+const ActionButtons = React.memo(({ canSubmit, showResult, onSkip, onVoice, onSubmit }) => (
   <div className="action-row">
     <button className="btn-skip" onClick={onSkip}>Skip</button>
     <button className="btn-record" onClick={onVoice}>Voice</button>
@@ -150,9 +148,9 @@ const ActionButtons = ({ canSubmit, showResult, onSkip, onVoice, onSubmit }) => 
       {showResult ? 'Next Question' : 'Submit Answer'}
     </button>
   </div>
-);
+));
 
-const MainPanel = ({
+const MainPanel = React.memo(({
   question,
   questionNumber,
   selectedOption,
@@ -161,7 +159,7 @@ const MainPanel = ({
   onSkip,
   onSubmit
 }) => {
-  const handleVoice = () => alert('Voice recording started');
+  const handleVoice = useCallback(() => alert('Voice recording started'), []);
 
   return (
     <div className="main-panel">
@@ -183,8 +181,8 @@ const MainPanel = ({
       />
     </div>
   );
-};
-const AICoach = ({ feedback, hints, keywords }) => (
+});
+const AICoach = React.memo(({ feedback, hints, keywords }) => (
   <div className="ai-panel">
     <div className="ai-header">
       <div className="ai-dot"></div>
@@ -203,9 +201,9 @@ const AICoach = ({ feedback, hints, keywords }) => (
       ))}
     </div>
   </div>
-);
+));
 
-const ConfidenceMeter = ({ score, trend }) => (
+const ConfidenceMeter = React.memo(({ score, trend }) => (
   <div className="confidence-meter">
     <div className="conf-label">AI confidence score</div>
     <div className="conf-arc">
@@ -216,33 +214,37 @@ const ConfidenceMeter = ({ score, trend }) => (
       </div>
     </div>
   </div>
-);
-const RightPanel = ({ question }) => {
-  const hints = question.type === 'Technical'
-    ? [
-      'Think about the core concept before choosing',
-      'Eliminate options that do not match the topic',
-      'Connect the answer to real project usage'
-    ]
-    : [
-      'Choose the option that shows ownership',
-      'Prefer clear communication and collaboration',
-      'Look for a professional action, not blame'
-    ];
+));
+const RightPanel = React.memo(({ question }) => {
+  const hints = useMemo(() => (
+    question.type === 'Technical'
+      ? [
+        'Think about the core concept before choosing',
+        'Eliminate options that do not match the topic',
+        'Connect the answer to real project usage'
+      ]
+      : [
+        'Choose the option that shows ownership',
+        'Prefer clear communication and collaboration',
+        'Look for a professional action, not blame'
+      ]
+  ), [question.type]);
+
+  const keywords = useMemo(() => [question.type, question.topic, question.difficulty], [question.type, question.topic, question.difficulty]);
 
   return (
     <div className="right-panel">
       <AICoach
         feedback={`Current question is from ${question.topic}. Focus on the strongest practical answer.`}
         hints={hints}
-        keywords={[question.type, question.topic, question.difficulty]}
+        keywords={keywords}
       />
       <ConfidenceMeter score={74} trend="up" />
     </div>
   );
-};
+});
 
-const SummaryScreen = ({
+const SummaryScreen = React.memo(({
   totalQuestions,
   answered,
   skipped,
@@ -294,7 +296,7 @@ const SummaryScreen = ({
       Start New Session
     </button>
   </div>
-);
+));
 
 const InterviewSession = ({ onBackToProfile, user }) => {
   const [sessionKey, setSessionKey] = useState(0);
@@ -327,16 +329,23 @@ const InterviewSession = ({ onBackToProfile, user }) => {
     setSecondsRemaining(SESSION_DURATION_SECONDS);
     const endTime = Date.now() + SESSION_DURATION_SECONDS * 1000;
 
-    const timerId = setInterval(() => {
+    const updateSeconds = () => {
       const nextSeconds = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
 
-      setSecondsRemaining(nextSeconds);
+      setSecondsRemaining((current) => {
+        if (current !== nextSeconds) {
+          return nextSeconds;
+        }
+        return current;
+      });
 
       if (nextSeconds === 0) {
         setIsFinished(true);
-        clearInterval(timerId);
       }
-    }, 250);
+    };
+
+    updateSeconds();
+    const timerId = setInterval(updateSeconds, 1000);
 
     return () => clearInterval(timerId);
   }, [sessionKey, isFinished]);

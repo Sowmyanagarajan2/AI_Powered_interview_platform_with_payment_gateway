@@ -1,5 +1,104 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import './InterviewCourses.css';
+
+const mockCourses = [
+  {
+    id: 1,
+    title: 'Java Interview Mastery',
+    description: 'Master Java interview questions covering OOP, Collections, Multithreading, and more.',
+    category: 'Java',
+    price: 29.99,
+    rating: 4.8,
+    students: 2450,
+    duration: '15 hours',
+    level: 'Intermediate',
+    image: '☕'
+  },
+  {
+    id: 2,
+    title: 'JavaScript & React Interview Guide',
+    description: 'Complete guide to JavaScript and React interview questions with real-world examples.',
+    category: 'JavaScript',
+    price: 24.99,
+    rating: 4.7,
+    students: 3200,
+    duration: '12 hours',
+    level: 'Intermediate',
+    image: '⚛️'
+  },
+  {
+    id: 3,
+    title: 'System Design Interview Prep',
+    description: 'Learn to design scalable systems and ace your system design interviews.',
+    category: 'System Design',
+    price: 39.99,
+    rating: 4.9,
+    students: 1800,
+    duration: '20 hours',
+    level: 'Advanced',
+    image: '🏗️'
+  },
+  {
+    id: 4,
+    title: 'Data Structures & Algorithms',
+    description: 'Complete DSA course with interview-focused problems and solutions.',
+    category: 'DSA',
+    price: 34.99,
+    rating: 4.8,
+    students: 4100,
+    duration: '18 hours',
+    level: 'Intermediate',
+    image: '📊'
+  },
+  {
+    id: 5,
+    title: 'Python Interview Bootcamp',
+    description: 'Python-specific interview questions and practical coding challenges.',
+    category: 'Python',
+    price: 27.99,
+    rating: 4.6,
+    students: 2800,
+    duration: '14 hours',
+    level: 'Intermediate',
+    image: '🐍'
+  },
+  {
+    id: 6,
+    title: 'SQL & Database Interview Guide',
+    description: 'Master SQL queries, database design, and optimization for interviews.',
+    category: 'Database',
+    price: 22.99,
+    rating: 4.5,
+    students: 1950,
+    duration: '10 hours',
+    level: 'Beginner',
+    image: '🗄️'
+  },
+  {
+    id: 7,
+    title: 'Frontend Interview Crash Course',
+    description: 'HTML, CSS, JavaScript, and front-end frameworks interview prep.',
+    category: 'Frontend',
+    price: 26.99,
+    rating: 4.7,
+    students: 3500,
+    duration: '13 hours',
+    level: 'Intermediate',
+    image: '🎨'
+  },
+  {
+    id: 8,
+    title: 'Behavioral & HR Interview Master',
+    description: 'Ace behavioral rounds with tips on STAR method and real scenarios.',
+    category: 'Behavioral',
+    price: 19.99,
+    rating: 4.4,
+    students: 2200,
+    duration: '8 hours',
+    level: 'Beginner',
+    image: '🎯'
+  }
+];
 
 const InterviewCourses = ({ user, onBackToHome }) => { //destructuring user and onBackToHome from props
   const [courses, setCourses] = useState([]);
@@ -12,130 +111,29 @@ const InterviewCourses = ({ user, onBackToHome }) => { //destructuring user and 
   const [paymentProcessing, setPaymentProcessing] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
-  const mockCourses = [
-    {
-      id: 1,
-      title: 'Java Interview Mastery',
-      description: 'Master Java interview questions covering OOP, Collections, Multithreading, and more.',
-      category: 'Java',
-      price: 29.99,
-      rating: 4.8,
-      students: 2450,
-      duration: '15 hours',
-      level: 'Intermediate',
-      image: '☕'
-    },
-    {
-      id: 2,
-      title: 'JavaScript & React Interview Guide',
-      description: 'Complete guide to JavaScript and React interview questions with real-world examples.',
-      category: 'JavaScript',
-      price: 24.99,
-      rating: 4.7,
-      students: 3200,
-      duration: '12 hours',
-      level: 'Intermediate',
-      image: '⚛️'
-    },
-    {
-      id: 3,
-      title: 'System Design Interview Prep',
-      description: 'Learn to design scalable systems and ace your system design interviews.',
-      category: 'System Design',
-      price: 39.99,
-      rating: 4.9,
-      students: 1800,
-      duration: '20 hours',
-      level: 'Advanced',
-      image: '🏗️'
-    },
-    {
-      id: 4,
-      title: 'Data Structures & Algorithms',
-      description: 'Complete DSA course with interview-focused problems and solutions.',
-      category: 'DSA',
-      price: 34.99,
-      rating: 4.8,
-      students: 4100,
-      duration: '18 hours',
-      level: 'Intermediate',
-      image: '📊'
-    },
-    {
-      id: 5,
-      title: 'Python Interview Bootcamp',
-      description: 'Python-specific interview questions and practical coding challenges.',
-      category: 'Python',
-      price: 27.99,
-      rating: 4.6,
-      students: 2800,
-      duration: '14 hours',
-      level: 'Intermediate',
-      image: '🐍'
-    },
-    {
-      id: 6,
-      title: 'SQL & Database Interview Guide',
-      description: 'Master SQL queries, database design, and optimization for interviews.',
-      category: 'Database',
-      price: 22.99,
-      rating: 4.5,
-      students: 1950,
-      duration: '10 hours',
-      level: 'Beginner',
-      image: '🗄️'
-    },
-    {
-      id: 7,
-      title: 'Frontend Interview Crash Course',
-      description: 'HTML, CSS, JavaScript, and front-end frameworks interview prep.',
-      category: 'Frontend',
-      price: 26.99,
-      rating: 4.7,
-      students: 3500,
-      duration: '13 hours',
-      level: 'Intermediate',
-      image: '🎨'
-    },
-    {
-      id: 8,
-      title: 'Behavioral & HR Interview Master',
-      description: 'Ace behavioral rounds with tips on STAR method and real scenarios.',
-      category: 'Behavioral',
-      price: 19.99,
-      rating: 4.4,
-      students: 2200,
-      duration: '8 hours',
-      level: 'Beginner',
-      image: '🎯'
-    }
-  ];
-//when page opens do this
-  useEffect(() => {
-    loadCourses();
-  }, []); //empty dependency array means this runs once on component mount
-
-  const loadCourses = async () => { //api call to load courses - currently simulating with mock data and timeout
+  const loadCourses = useCallback(async () => {
     try {
       setLoading(true);
       // Simulating API call - in production, this would fetch from backend
-      setTimeout(() => {
-        setCourses(mockCourses);
-        // Load enrolled courses from localStorage
-
-        //if iot production then this would be an API call to get enrolled courses for the user
-        // const response =await.axios.get('/api/user/enrolled-courses');
-        // setCourses(response.data.courses);
-        const enrolled = JSON.parse(localStorage.getItem('enrolledCourses') || '[]');
-        setEnrolledCourses(enrolled);
-        setLoading(false);
-      }, 500); //500 display time to show loading state
+      // Removed artificial 500ms delay; set mock data immediately for better perceived performance
+      setCourses(mockCourses);
+      // Load enrolled courses from localStorage
+      // if in production this would be an API call to get enrolled courses for the user
+      // const response = await axios.get('/api/user/enrolled-courses');
+      // setCourses(response.data.courses);
+      const enrolled = JSON.parse(localStorage.getItem('enrolledCourses') || '[]');
+      setEnrolledCourses(enrolled);
+      setLoading(false);
     } catch (err) {
       console.error('Error loading courses:', err);
       setError('Failed to load courses');
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadCourses();
+  }, [loadCourses]);
 
   const handleEnrollCourse = async (courseId) => {
     try {
@@ -145,9 +143,8 @@ const InterviewCourses = ({ user, onBackToHome }) => { //destructuring user and 
       }
 
       // Simulate backend enrollment call
-      const token = localStorage.getItem('sessionToken');
-    
       // In production, this would call the backend
+      // const token = localStorage.getItem('sessionToken');
       // const response = await fetch(
       //   (process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000') + '/api/courses/enroll',
       //   {
@@ -228,6 +225,34 @@ const InterviewCourses = ({ user, onBackToHome }) => { //destructuring user and 
     rzp.open();
     setPaymentProcessing(false);
   };
+
+  // Sharing helpers
+  const shareCourseEmail = (course) => {
+    const subject = `Check out this course: ${course.title}`;
+    const body = `${course.title}%0D%0A%0D%0A${course.description}%0D%0A%0D%0APrice: $${course.price}%0D%0A%0D%0AView on PrepAI: ${window.location.origin}${window.location.pathname}`;
+    const mailto = `mailto:?subject=${encodeURIComponent(subject)}&body=${body}`;
+    window.open(mailto, '_self');
+  };
+
+  const shareCourseWhatsApp = (course) => {
+    const text = `${course.title} - ${course.description} \nPrice: $${course.price} \n${window.location.origin}${window.location.pathname}`;
+    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  };
+
+  const EmailIcon = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M3 5.5C3 4.67157 3.67157 4 4.5 4H19.5C20.3284 4 21 4.67157 21 5.5V18.5C21 19.3284 20.3284 20 19.5 20H4.5C3.67157 20 3 19.3284 3 18.5V5.5Z" stroke="#333" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M21 6.5L12 13L3 6.5" stroke="#333" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+
+  const WhatsappIcon = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M21 12.004C21 16.9706 16.9706 21 12.004 21C10.035 21 8.195 20.4 6.76 19.36L3 20.5L4.22 16.88C3.18 15.45 2.58 13.61 2.58 11.64C2.58 6.67 6.61 2.64 11.58 2.64C16.55 2.64 20.58 6.67 20.58 11.64V12.004H21Z" stroke="#25D366" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M17.2 14.2C16.8 14.6 15.9 15.1 15.5 15.2C15.1 15.3 14.6 15.3 14.1 15.1C13.6 14.9 12.7 14.5 11.6 13.5C10.5 12.5 9.9 11.5 9.7 11.1C9.5 10.7 9.6 10.2 9.7 9.9C9.8 9.6 10.3 8.8 10.5 8.5C10.7 8.2 10.9 8.1 11.1 8.1C11.3 8.1 11.6 8.1 11.9 8.2C12.2 8.3 12.7 8.5 13.1 8.9C13.5 9.3 13.9 9.8 14.1 10.1C14.3 10.4 14.4 10.6 14.3 10.8C14.2 11 13.8 11.4 13.6 11.6C13.4 11.8 13.2 11.9 12.9 12C12.6 12.1 12.1 12.2 11.6 12.2" stroke="#25D366" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
 
   if (loading) {
     return (
@@ -348,16 +373,26 @@ const InterviewCourses = ({ user, onBackToHome }) => { //destructuring user and 
                   <div className="price-section">
                     <span className="price">${course.price}</span>
                   </div>
-                  {enrolledCourses.includes(course.id) ? (
-                    <button className="enroll-btn enrolled" disabled>✓ Enrolled</button>
-                  ) : cart.includes(course.id) ? (
-                    <button className="cart-btn added" disabled>Added to Cart</button>
-                  ) : (
-                    <>
-                      <button className="cart-btn" onClick={() => handleAddToCart(course.id)}>Add to Cart</button>
-                      <button className="enroll-btn" onClick={() => handleEnrollCourse(course.id)}>Enroll Now</button>
-                    </>
-                  )}
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <div className="share-buttons">
+                      <button className="share-btn" onClick={() => shareCourseEmail(course)} aria-label="Share via Email">
+                        <span className="share-icon"><EmailIcon /></span>
+                      </button>
+                      <button className="share-btn" onClick={() => shareCourseWhatsApp(course)} aria-label="Share on WhatsApp">
+                        <span className="share-icon"><WhatsappIcon /></span>
+                      </button>
+                    </div>
+                    {enrolledCourses.includes(course.id) ? (
+                      <button className="enroll-btn enrolled" disabled>✓ Enrolled</button>
+                    ) : cart.includes(course.id) ? (
+                      <button className="cart-btn added" disabled>Added to Cart</button>
+                    ) : (
+                      <>
+                        <button className="cart-btn" onClick={() => handleAddToCart(course.id)}>Add to Cart</button>
+                        <button className="enroll-btn" onClick={() => handleEnrollCourse(course.id)}>Enroll Now</button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

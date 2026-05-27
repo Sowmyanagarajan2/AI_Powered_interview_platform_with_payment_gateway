@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
+import supabase from './supabaseClient';
 import './Login.css';
 
 const SAVED_LOGIN_KEY = 'prepai-login';
@@ -30,16 +31,63 @@ const Login = ({ onLogin }) => {
     }
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError('');
 
-    if (rememberMe) {
-      localStorage.setItem(SAVED_LOGIN_KEY, JSON.stringify({ email, password }));
-    } else {
-      localStorage.removeItem(SAVED_LOGIN_KEY);
+    try {
+      // Sign in with Supabase using email/password
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+      if (error) throw error;
+
+      const accessToken = data?.session?.access_token;
+
+      if (!accessToken) {
+        throw new Error('Authentication failed: no access token');
+      }
+
+      // Exchange Supabase token with backend to create/local session
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
+      const response = await fetch(`${backendUrl}/api/auth/supabase`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: accessToken })
+      });
+
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || 'Authentication exchange failed');
+      }
+
+      const result = await response.json();
+
+      if (rememberMe) {
+        localStorage.setItem(SAVED_LOGIN_KEY, JSON.stringify({ email, password }));
+      } else {
+        localStorage.removeItem(SAVED_LOGIN_KEY);
+      }
+
+      onLogin(
+        {
+          id: result.user.id,
+          email: result.user.email,
+          name: result.user.name,
+          picture: result.user.picture,
+          interviewsCompleted: result.user.interviewsCompleted,
+          averageScore: result.user.averageScore,
+          provider: 'supabase',
+          rememberMe
+        },
+        result.sessionToken
+      );
+    } catch (err) {
+      console.error('Login error:', err);
+      setError(err.message || 'Login failed');
+    } finally {
+      setLoading(false);
     }
-
-    onLogin({ email, rememberMe });
   };
 
   const handleRememberChange = (e) => {
